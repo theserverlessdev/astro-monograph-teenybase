@@ -1,2 +1,12 @@
 User-agent: *
 Allow: /
+
+# The admin is intentionally public for the demo, but kept out of indexes.
+Disallow: /admin
+Disallow: /internal
+
+Sitemap: https://astro-monograph-teenybase.theserverless.dev/sitemap.xml
+
+# LLM discovery
+# llms.txt: https://astro-monograph-teenybase.theserverless.dev/llms.txt
+# llms-full.txt: https://astro-monograph-teenybase.theserverless.dev/llms-full.txt

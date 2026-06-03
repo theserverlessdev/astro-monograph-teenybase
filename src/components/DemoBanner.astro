@@ -1,0 +1,78 @@
+---
+// A slim, dismissible bar pinned to the bottom of every page that advertises the
+// live admin demo and shows the (intentionally public) credentials. The database
+// resets daily (src/server/reset.ts), so anything visitors change is temporary.
+import { DEMO } from '../lib/demo';
+---
+<div id="demo-banner" class="demo-banner" hidden>
+  <div class="demo-banner-inner">
+    <span class="demo-tag">LIVE DEMO</span>
+    <p class="demo-text">
+      Edit this whole site — content, colors, blog &amp; links — from the admin.
+      Sign in with
+      <code class="demo-cred">{DEMO.email}</code> /
+      <code class="demo-cred">{DEMO.password}</code>.
+      <span class="demo-note">Database resets every 24h.</span>
+    </p>
+    <a href="/admin" class="demo-cta">Open Admin →</a>
+    <button id="demo-dismiss" class="demo-dismiss" aria-label="Dismiss demo banner">✕</button>
+  </div>
+</div>
+
+<style>
+  .demo-banner {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 90;
+    background: var(--color-accent);
+    color: var(--color-ink-on-dark, #fff);
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.12);
+  }
+  .demo-banner-inner {
+    max-width: 1200px; margin: 0 auto; padding: 0.6rem 1rem;
+    display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;
+  }
+  .demo-tag {
+    font-family: var(--font-mono, monospace); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    background: rgba(255, 255, 255, 0.18); padding: 0.2rem 0.45rem; border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .demo-text { margin: 0; font-size: 13.5px; line-height: 1.5; flex: 1; min-width: 220px; }
+  .demo-cred {
+    font-family: var(--font-mono, monospace); font-size: 12.5px;
+    background: rgba(0, 0, 0, 0.18); padding: 0.1em 0.4em; border-radius: 4px;
+    white-space: nowrap;
+  }
+  .demo-note { opacity: 0.85; }
+  .demo-cta {
+    flex-shrink: 0; font-size: 13px; font-weight: 700; text-decoration: none;
+    background: var(--color-ink-on-dark, #fff); color: var(--color-accent);
+    padding: 0.4rem 0.85rem; border-radius: 7px; white-space: nowrap;
+  }
+  .demo-cta:hover { filter: brightness(0.95); }
+  .demo-dismiss {
+    flex-shrink: 0; background: none; border: none; cursor: pointer;
+    color: var(--color-ink-on-dark, #fff); opacity: 0.8; font-size: 15px; line-height: 1;
+    padding: 0.3rem;
+  }
+  .demo-dismiss:hover { opacity: 1; }
+  @media (max-width: 560px) {
+    .demo-note { display: none; }
+    .demo-text { min-width: 0; }
+  }
+</style>
+
+<script>
+  const KEY = 'demo-banner-dismissed';
+  const el = document.getElementById('demo-banner');
+  if (el && localStorage.getItem(KEY) !== '1') {
+    el.hidden = false;
+    // Keep page content clear of the fixed bar.
+    document.body.style.paddingBottom = el.offsetHeight + 'px';
+  }
+  document.getElementById('demo-dismiss')?.addEventListener('click', () => {
+    localStorage.setItem(KEY, '1');
+    if (el) el.hidden = true;
+    document.body.style.paddingBottom = '';
+  });
+</script>
