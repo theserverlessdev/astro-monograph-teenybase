@@ -120,12 +120,12 @@ export class AdminApp {
           <button class="adm-hamburger" id="adm-menu-btn" aria-label="Menu" aria-expanded="false">
             <span></span><span></span><span></span>
           </button>
-          <div class="adm-brand">astro-monograph-teenybase.theserverless.dev <span>admin</span></div>
+          <div class="adm-brand">Monograph <span>admin</span></div>
           <button class="adm-theme-btn" id="adm-theme-top" aria-label="Toggle theme">${themeIcon()}</button>
         </header>
         <div class="adm-overlay" id="adm-overlay"></div>
         <aside class="adm-side" id="adm-side">
-          <div class="adm-brand adm-brand-side">astro-monograph-teenybase.theserverless.dev <span>admin</span></div>
+          <div class="adm-brand adm-brand-side">Monograph <span>admin</span></div>
           <nav class="adm-nav">
             <div class="adm-nav-group">Site content</div>
             ${SINGLETON_SECTIONS.map(secNavLink).join('')}
