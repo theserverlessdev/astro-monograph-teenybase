@@ -9,15 +9,10 @@
   "compatibility_date": "2026-05-31",
   "compatibility_flags": ["nodejs_compat"],
   "observability": { "enabled": true },
-  // Daily database reset for the public demo. The @astrojs/cloudflare adapter
-  // generates the deploy config (dist/server/wrangler.json) and the Worker entry
-  // (which only exports `fetch`); scripts/postbuild-cron.mjs runs after the build
-  // to (a) wrap that entry with a `scheduled()` handler that hits /internal/reset
-  // and (b) copy this cron schedule into the generated config. Keeping it here too
-  // documents the schedule and feeds `astro dev`.
-  "triggers": {
-    "crons": ["0 0 * * *"]
-  },
+  // No cron here by default — a normal clone deploys a plain portfolio Worker.
+  // The public demo opts in by building with PUBLIC_DEMO_MODE=1, which makes
+  // scripts/postbuild-cron.mjs wrap the Worker entry with a scheduled() handler
+  // and inject the daily /internal/reset trigger into the generated deploy config.
   // Serve the production site from the apex domain. astro-monograph-teenybase.theserverless.dev is a Cloudflare zone,
   // so this attaches the Worker as a Custom Domain (Cloudflare manages the DNS
   // record + TLS cert automatically).
