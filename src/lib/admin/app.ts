@@ -5,7 +5,6 @@ import { SECTION_DEFS, getSectionDef, type SectionDef } from './sections';
 import * as api from './client';
 import { EntityForm } from './form';
 import { SectionForm } from './section-form';
-import { DEMO, DEMO_MODE } from '../demo';
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string, root: ParentNode = document): T =>
   root.querySelector(sel) as T;
@@ -75,26 +74,16 @@ export class AdminApp {
 
   // --- Auth -----------------------------------------------------------------
   private renderLogin(error = '') {
-    // In demo mode only, surface + pre-fill the public demo credentials.
-    const demoNote = DEMO_MODE ? `
-          <div class="adm-demo-note">
-            <strong>Live demo</strong> — sign in and edit anything. The database
-            resets every 24h, so changes are temporary.<br />
-            <span class="adm-demo-cred">${esc(DEMO.email)}</span> /
-            <span class="adm-demo-cred">${esc(DEMO.password)}</span>
-          </div>` : '';
-    const emailVal = DEMO_MODE ? esc(DEMO.email) : '';
-    const passVal = DEMO_MODE ? esc(DEMO.password) : '';
     this.root.innerHTML = `
       <div class="adm-auth">
         <form class="adm-auth-card" id="login-form">
           <h1 class="adm-auth-title">Monograph admin</h1>
           <p class="adm-auth-sub">Sign in to manage content.</p>
-          ${error ? `<div class="adm-error">${esc(error)}</div>` : ''}${demoNote}
+          ${error ? `<div class="adm-error">${esc(error)}</div>` : ''}
           <label class="adm-label" for="email">Email</label>
-          <input class="adm-input" id="email" type="email" autocomplete="username" value="${emailVal}" required />
+          <input class="adm-input" id="email" type="email" autocomplete="username" required />
           <label class="adm-label" for="password">Password</label>
-          <input class="adm-input" id="password" type="password" autocomplete="current-password" value="${passVal}" required />
+          <input class="adm-input" id="password" type="password" autocomplete="current-password" required />
           <button class="adm-btn adm-btn-primary adm-btn-block" type="submit">Sign in</button>
         </form>
       </div>`;

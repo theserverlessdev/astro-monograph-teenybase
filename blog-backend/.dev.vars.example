@@ -6,12 +6,3 @@ ADMIN_JWT_SECRET=dev-admin-jwt-secret-change-in-production
 ADMIN_SERVICE_TOKEN=dev-admin-token
 POCKET_UI_VIEWER_PASSWORD=viewer
 POCKET_UI_EDITOR_PASSWORD=editor
-
-# Demo reset. RESET_TOKEN guards POST /internal/reset; the daily cron passes it
-# to rebuild the demo database. The DEMO_* vars override the public demo admin
-# account (defaults live in src/lib/demo.ts).
-RESET_TOKEN=dev-reset-token
-# DEMO_EMAIL=demo@example.com
-# DEMO_PASSWORD=monograph-demo
-# DEMO_USERNAME=demo
-# DEMO_NAME=Demo Admin

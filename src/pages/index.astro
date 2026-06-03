@@ -15,11 +15,9 @@ import LinksTeaser from '../components/LinksTeaser.astro';
 import CustomSections from '../components/CustomSections.astro';
 import Contact from '../components/Contact.astro';
 import Footer from '../components/Footer.astro';
-import DemoBanner from '../components/DemoBanner.astro';
 import { getContent } from '../lib/content';
 import { listPosts } from '../lib/blog';
 import { listLinks } from '../lib/links';
-import { DEMO_MODE } from '../lib/demo';
 
 const content = await getContent(Astro);
 const site = content.site || {};
@@ -57,5 +55,4 @@ const recentLinks = home.links !== false ? await listLinks(ctx, 5) : [];
     {sectionOn('contact') && (contact.heading || site.email) && <Contact />}
   </main>
   <Footer />
-  {DEMO_MODE && <DemoBanner />}
 </BaseLayout>

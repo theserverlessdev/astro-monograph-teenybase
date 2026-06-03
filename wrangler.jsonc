@@ -9,10 +9,6 @@
   "compatibility_date": "2026-05-31",
   "compatibility_flags": ["nodejs_compat"],
   "observability": { "enabled": true },
-  // No cron here by default — a normal clone deploys a plain portfolio Worker.
-  // The public demo opts in by building with PUBLIC_DEMO_MODE=1, which makes
-  // scripts/postbuild-cron.mjs wrap the Worker entry with a scheduled() handler
-  // and inject the daily /internal/reset trigger into the generated deploy config.
   // Serve the production site from the apex domain. astro-monograph-teenybase.theserverless.dev is a Cloudflare zone,
   // so this attaches the Worker as a Custom Domain (Cloudflare manages the DNS
   // record + TLS cert automatically).
@@ -27,10 +23,10 @@
     {
       "binding": "PRIMARY_DB",
       "database_name": "astro-monograph-teenybase-db",
-      // The demo deployment's D1 id (committed so Cloudflare Workers Builds CD can
-      // bind it). A fresh clone running `npm run setup` (scripts/setup.mjs) creates
-      // its own database and rewrites this id.
-      "database_id": "b3a9876d-438b-44f1-ab39-f2b22ee5e73a",
+      // Placeholder. `npm run setup` (scripts/setup.mjs) rewrites this with the
+      // real D1 id it creates/looks up. Non-empty so local `astro dev`/build
+      // (Miniflare) works; a real deploy needs the true id.
+      "database_id": "00000000-0000-0000-0000-000000000000",
       "migrations_dir": "blog-backend/migrations"
     }
   ],
