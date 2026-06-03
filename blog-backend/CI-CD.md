@@ -15,13 +15,19 @@ GitHub.
 
    | Setting | Value |
    |---|---|
-   | **Git branch** | `master` (production) |
+   | **Git branch** | `main` (production) |
    | **Build command** | `npm run build` |
    | **Deploy command** | `npx wrangler deploy` |
    | **Root directory** | `/` (repo root) |
-   | **Build variables** | *(none required — secrets are already set on the Worker)* |
+   | **Build variables** | `PUBLIC_DEMO_MODE=1` *(public demo only — see below)* |
 
-4. Save. Push a commit to `master` to trigger the first build.
+4. Save. Push a commit to `main` to trigger the first build.
+
+> **`PUBLIC_DEMO_MODE`** is what makes a build a *demo* build: the DemoBanner +
+> exposed credentials and the daily `/internal/reset` cron are emitted only when
+> it's set (see `src/lib/demo.ts`, `scripts/postbuild-cron.mjs`). Set it to `1` in
+> the dashboard build variables for the public demo Worker. Leave it unset for a
+> normal private deployment.
 
 > **Why these values:** the build command produces `dist/` via Astro's Cloudflare
 > adapter, and `wrangler deploy` ships it using the bindings in the repo-root
