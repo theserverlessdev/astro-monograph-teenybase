@@ -27,10 +27,10 @@
     {
       "binding": "PRIMARY_DB",
       "database_name": "astro-monograph-teenybase-db",
-      // Placeholder. `npm run setup` (scripts/setup.mjs) rewrites this with the
-      // real D1 id it creates/looks up. The value only needs to be non-empty for
-      // local `astro dev`/build (Miniflare); a real deploy requires the true id.
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      // The demo deployment's D1 id (committed so Cloudflare Workers Builds CD can
+      // bind it). A fresh clone running `npm run setup` (scripts/setup.mjs) creates
+      // its own database and rewrites this id.
+      "database_id": "b3a9876d-438b-44f1-ab39-f2b22ee5e73a",
       "migrations_dir": "blog-backend/migrations"
     }
   ],
