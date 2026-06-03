@@ -1,5 +1,11 @@
 /// <reference types="astro/client" />
 
+// Markdown seed files imported as raw strings (Vite ?raw) by src/server/reset.ts.
+declare module '*.md?raw' {
+  const content: string;
+  export default content;
+}
+
 // Minimal Cloudflare types for SSR code. We intentionally do NOT pull
 // @cloudflare/workers-types in globally — its DOM-overlapping globals clash with
 // the browser DOM lib used by the /admin SPA. Bindings are accessed via

@@ -19,8 +19,41 @@ import { env } from 'cloudflare:workers';
 import { getTeenyApp } from './teeny';
 import { yamlBaseline } from '../lib/content';
 import { DEMO } from '../lib/demo';
+// The seeded blog posts are the committed Markdown files (with front-matter),
+// inlined at build via Vite's ?raw so they ship inside the Worker.
+import welcomeMd from '../../blog-backend/seed/welcome.md?raw';
+import tourMd from '../../blog-backend/seed/using-the-cms.md?raw';
 
 const NOOP_CTX = { waitUntil() {}, passThroughOnException() {} };
+
+// Minimal front-matter parser (mirrors blog-backend/seed/seed.mjs): splits the
+// `--- meta --- body` Markdown into a post record.
+function parsePost(raw: string): { title: string; slug: string; excerpt: string; body: string; tags: string[]; ai_generated: boolean } {
+  const m = raw.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+  const meta: Record<string, any> = {};
+  if (m) {
+    for (const line of m[1].split('\n')) {
+      const mm = line.match(/^(\w+):\s*(.*)$/);
+      if (!mm) continue;
+      let [, k, v] = mm;
+      v = v.trim();
+      if (v.startsWith('[')) { try { meta[k] = JSON.parse(v); } catch { meta[k] = []; } }
+      else if (v === 'true' || v === 'false') meta[k] = v === 'true';
+      else meta[k] = v.replace(/^"(.*)"$/, '$1');
+    }
+  }
+  return {
+    title: meta.title || 'Untitled',
+    slug: meta.slug || 'post',
+    excerpt: meta.excerpt || '',
+    body: (m ? m[2] : raw).trim(),
+    tags: Array.isArray(meta.tags) ? meta.tags : [],
+    ai_generated: meta.ai_generated ?? false,
+  };
+}
+
+// Newest last → seeded last → highest published_at, so it sorts to the top.
+const SEED_POSTS = [parsePost(welcomeMd), parsePost(tourMd)];
 
 function appUrl(): string {
   return String((env as any).APP_URL || 'https://astro-monograph-teenybase.theserverless.dev').replace(/\/$/, '');
@@ -68,37 +101,6 @@ async function wipe(): Promise<void> {
     try { await db.prepare(`DELETE FROM ${table}`).run(); } catch { /* table may not exist yet */ }
   }
 }
-
-const WELCOME_POST = {
-  title: 'Welcome to the Astro Monograph demo',
-  slug: 'welcome',
-  excerpt: 'A single-page Astro portfolio with a built-in CMS, blog, and links feed — all on one Cloudflare Worker, backed by teenybase (D1 + R2).',
-  tags: ['astro', 'teenybase', 'cloudflare'],
-  body: [
-    "You're looking at the live demo of **Astro Monograph (teenybase edition)**.",
-    '',
-    'Everything on this site — the hero, about, experience, projects, skills,',
-    'education and contact sections, plus the colors, fonts, this blog, and the',
-    'links feed — is editable from the **/admin** panel. No code, no redeploys:',
-    'edits save as drafts, you preview them, then publish.',
-    '',
-    '## How it works',
-    '',
-    '- **Astro SSR** renders the site and reads published content straight from',
-    '  **Cloudflare D1** during render.',
-    '- **[teenybase](https://teenybase.com)** provides the API, auth, and admin —',
-    '  mounted at `/api/*` inside the *same* Worker, sharing one D1 database and',
-    '  one R2 bucket.',
-    '- The committed `src/data/*.yaml` is the seed and the fallback, so a fresh',
-    '  clone always renders even before the database is seeded.',
-    '',
-    '## Try it',
-    '',
-    'Open the **admin** (linked at the bottom of the page), sign in with the demo',
-    'credentials shown there, and change anything you like. This is a shared',
-    'sandbox, so the database **resets every 24 hours** — your edits are temporary.',
-  ].join('\n'),
-};
 
 const WELCOME_LINK = {
   title: 'teenybase — a single-file backend on Cloudflare',
@@ -164,25 +166,31 @@ export async function resetDemo(): Promise<string> {
   }
   log.push(`seeded ${seeded} sections`);
 
-  // 6. Seed the welcome post + one link (best-effort).
+  // 6. Seed the blog posts (from the committed Markdown) + one link (best-effort).
   if (userId) {
-    const post = await call('/api/v1/table/posts/insert', {
-      method: 'POST', token,
-      body: {
-        values: {
-          author_id: userId,
-          title: WELCOME_POST.title,
-          slug: WELCOME_POST.slug,
-          excerpt: WELCOME_POST.excerpt,
-          body: WELCOME_POST.body,
-          tags: JSON.stringify(WELCOME_POST.tags),
-          published: true,
-          published_at: new Date().toISOString(),
-          ai_generated: true,
+    let posts = 0;
+    // Space published_at apart so ordering is stable (last file = newest).
+    for (let i = 0; i < SEED_POSTS.length; i++) {
+      const p = SEED_POSTS[i];
+      const r = await call('/api/v1/table/posts/insert', {
+        method: 'POST', token,
+        body: {
+          values: {
+            author_id: userId,
+            title: p.title,
+            slug: p.slug,
+            excerpt: p.excerpt,
+            body: p.body,
+            tags: JSON.stringify(p.tags),
+            published: true,
+            published_at: new Date(Date.now() + i * 1000).toISOString(),
+            ai_generated: p.ai_generated,
+          },
         },
-      },
-    });
-    log.push(`post ${post.ok ? 'seeded' : `failed ${post.status}`}`);
+      });
+      if (r.ok) posts++;
+    }
+    log.push(`seeded ${posts}/${SEED_POSTS.length} posts`);
 
     const link = await call('/api/v1/table/links/insert', {
       method: 'POST', token,
