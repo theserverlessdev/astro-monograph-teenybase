@@ -29,6 +29,10 @@ sharing a single D1 database and R2 bucket.
   (`src/lib/content.ts`).
 - Edits in `/admin` save as **drafts**; you **Preview**, then **Publish**
   (publish copies `draft` → `published`).
+- **Project detail pages** at `/projects/<slug>` (optional Markdown write-up per
+  project), a print-ready **`/cv`** résumé generated from the same content, and
+  **edge-generated Open Graph cards** for every page (`/og/*.png`, via satori +
+  resvg) so shared links look like the site.
 
 ```
 src/
@@ -36,9 +40,10 @@ src/
 │                    # Contact, Footer, BlogTeaser, LinksTeaser, CustomSections
 ├── data/            # YAML seed + fallback content (edit or seed into D1)
 ├── layouts/         # BaseLayout (SEO/theme), PageLayout (sub-page chrome)
-├── lib/             # data loader, content (D1↔YAML), blog, links, rss, admin SPA
-├── pages/           # index, blog/, links, admin/, api/[...path],
-│                    # rss.xml, links.xml, sitemap.xml, llms.txt, robots.txt
+├── lib/             # data loader, content (D1↔YAML), blog, links, rss, slug, og, admin SPA
+├── pages/           # index, blog/, links, cv, projects/[slug], admin/,
+│                    # api/[...path], og/[...path], rss.xml, links.xml,
+│                    # sitemap.xml, llms.txt, robots.txt
 ├── server/          # teeny.ts (mounts teenybase inside the Worker)
 └── styles/          # global.css (Tailwind theme + animations)
 blog-backend/        # teenybase config + generated D1 migrations + seed scripts

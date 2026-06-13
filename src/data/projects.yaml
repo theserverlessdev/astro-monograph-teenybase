@@ -14,6 +14,27 @@ items:
   - title: "TaskFlow"
     subtitle: "Team project management reimagined"
     description: "A modern project management tool with real-time collaboration, Kanban boards, and AI-powered task prioritization. Built for small teams who want simplicity without sacrificing power."
+    body: |
+      ## The problem
+
+      Small teams kept bouncing between a chat app, a spreadsheet, and a
+      heavyweight project tool that nobody enjoyed opening. TaskFlow started as a
+      weekend prototype to see how much of that could collapse into one fast,
+      real-time board.
+
+      ## How it works
+
+      - **Real-time boards** — every change syncs over a websocket, so a card
+        moved on one screen slides on everyone else's instantly.
+      - **AI prioritization** — an optional pass ranks the backlog from due dates,
+        dependencies, and past velocity, then explains *why* in a sentence.
+      - **Keyboard-first** — the whole board is drivable without a mouse.
+
+      ## What I learned
+
+      Optimistic UI is the difference between "fine" and "fast". Rendering the
+      move immediately and reconciling on the server response made the tool feel
+      native, even on a flaky connection.
     icon: "lvrxlmju"
     status: "Live"
     featured: true
@@ -34,6 +55,24 @@ items:
   - title: "DevMetrics"
     subtitle: "Engineering team analytics dashboard"
     description: "Dashboard that aggregates data from GitHub, Jira, and Slack to give engineering leaders visibility into team velocity, code review bottlenecks, and deployment frequency."
+    body: |
+      ## Why
+
+      "How is the team doing?" is a surprisingly hard question to answer with
+      data that already exists but lives in three different tools. DevMetrics
+      pulls it together into a few honest charts.
+
+      ## Highlights
+
+      - **One pipeline** — scheduled jobs normalize GitHub, Jira, and Slack
+        events into a single time-series store.
+      - **Bottleneck view** — surfaces where pull requests actually wait (review,
+        CI, or merge) instead of a single vanity number.
+      - **Leakproof** — read-only scopes and per-workspace isolation, because the
+        data is sensitive.
+
+      Built to be glanceable: if a chart needs a paragraph to explain, it didn't
+      ship.
     icon: "oqhqyeud"
     status: "Live"
     featured: true
