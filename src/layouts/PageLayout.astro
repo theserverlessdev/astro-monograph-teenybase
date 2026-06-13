@@ -1,0 +1,22 @@
+---
+// Shared chrome for standalone sub-pages (blog, etc.): the same fixed Navbar and
+// Footer the home page uses, wrapped around BaseLayout. The home page composes
+// these itself (it needs per-section control), but every other page should feel
+// like part of the same site rather than a bare document.
+import BaseLayout from './BaseLayout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  ogImage?: string;
+}
+
+const { title, description, ogImage } = Astro.props;
+---
+<BaseLayout title={title} description={description} ogImage={ogImage}>
+  <Navbar />
+  <slot />
+  <Footer />
+</BaseLayout>

@@ -1,42 +1,37 @@
 {
-  "name": "astro-monograph",
+  "name": "astro-monograph-teenybase",
   "type": "module",
   "version": "1.0.0",
-  "description": "A clean, YAML-driven single-page portfolio theme for Astro. No CMS, no database — just edit YAML files and deploy.",
-  "author": "Ankur Singh <hello@anks.in> (https://anks.in)",
-  "homepage": "https://github.com/theserverlessdev/astro-monograph",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/theserverlessdev/astro-monograph.git"
-  },
-  "bugs": {
-    "url": "https://github.com/theserverlessdev/astro-monograph/issues"
-  },
+  "private": true,
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "setup": "node scripts/setup.mjs",
+    "seed:content": "node scripts/seed-content.mjs",
+    "theme": "./publish-theme.sh",
+    "theme:dry": "./publish-theme.sh --dry-run"
   },
-  "keywords": [
-    "astro",
-    "astro-theme",
-    "portfolio",
-    "resume",
-    "personal-site",
-    "tailwindcss",
-    "yaml",
-    "single-page",
-    "developer-portfolio"
-  ],
-  "license": "MIT",
   "dependencies": {
+    "@astrojs/cloudflare": "^13.6.0",
+    "@resvg/resvg-wasm": "^2.6.2",
     "@tailwindcss/vite": "^4.2.2",
-    "astro": "^6.0.8",
+    "astro": "^6.4.2",
+    "devalue": "^5.8.1",
+    "hono": "^4.12.23",
     "js-yaml": "^4.1.1",
-    "tailwindcss": "^4.2.2"
+    "marked": "^18.0.4",
+    "postcss": "^8.5.15",
+    "satori": "^0.12.2",
+    "tailwindcss": "^4.2.2",
+    "teenybase": "^0.0.14"
   },
   "devDependencies": {
-    "@astrojs/sitemap": "^3.7.1"
+    "@astrojs/check": "^0.9.9",
+    "@astrojs/sitemap": "^3.7.1",
+    "@cloudflare/workers-types": "^4.20260531.1",
+    "@types/js-yaml": "^4.0.9",
+    "playwright": "^1.60.0",
+    "wrangler": "^4.95.0"
   }
 }

@@ -1,0 +1,39 @@
+{
+  // Single Worker for all of astro-monograph-teenybase.theserverless.dev: Astro SSR (pages/blog/admin) + the
+  // teenybase API/admin mounted at /api/*, sharing one D1 + R2.
+  // `main` / assets are injected by the @astrojs/cloudflare adapter at build;
+  // this file supplies the bindings (used in `astro dev` via platformProxy and
+  // at deploy via `wrangler deploy`).
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "astro-monograph-teenybase",
+  "compatibility_date": "2026-05-31",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  // Serve the production site from the apex domain. astro-monograph-teenybase.theserverless.dev is a Cloudflare zone,
+  // so this attaches the Worker as a Custom Domain (Cloudflare manages the DNS
+  // record + TLS cert automatically).
+  "routes": [
+    { "pattern": "astro-monograph-teenybase.theserverless.dev", "custom_domain": true }
+  ],
+  "vars": {
+    "RESPOND_WITH_ERRORS": "true",
+    "APP_URL": "https://astro-monograph-teenybase.theserverless.dev"
+  },
+  "d1_databases": [
+    {
+      "binding": "PRIMARY_DB",
+      "database_name": "astro-monograph-teenybase-db",
+      // Placeholder. `npm run setup` (scripts/setup.mjs) rewrites this with the
+      // real D1 id it creates/looks up. Non-empty so local `astro dev`/build
+      // (Miniflare) works; a real deploy needs the true id.
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "blog-backend/migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "FILES",
+      "bucket_name": "astro-monograph-teenybase-files"
+    }
+  ]
+}
