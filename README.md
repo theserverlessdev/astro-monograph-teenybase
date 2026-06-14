@@ -6,16 +6,24 @@ built-in `/admin`, with no code changes and no redeploys. Astro SSR and a
 [teenybase](https://teenybase.com) backend run inside **one Cloudflare Worker**,
 sharing a single D1 database and R2 bucket.
 
-**[Live demo → astro-monograph-teenybase.theserverless.dev](https://astro-monograph-teenybase.theserverless.dev)** — sign in to the admin and edit content, colors, fonts, blog posts and links live.
+**[Live demo → astro-monograph-teenybase.theserverless.dev](https://astro-monograph-teenybase.theserverless.dev)**
+
+The demo's admin is open for anyone to try:
+
+| | |
+|---|---|
+| **Admin** | [/admin](https://astro-monograph-teenybase.theserverless.dev/admin) |
+| **Email** | `demo@example.com` |
+| **Password** | `monograph-demo` |
+
+Sign in and edit anything — content, colors, fonts, blog posts, links. It's a
+shared sandbox, so a Cloudflare Cron Trigger **resets the database every 24 hours**;
+your edits are temporary.
 
 > This is the dynamic, CMS-backed evolution of the static
 > [Astro Monograph](https://github.com/theserverlessdev/astro-monograph) theme.
 > See the [meta blog post on the live demo](https://astro-monograph-teenybase.theserverless.dev/blog/using-the-cms)
 > for a tour of the CMS and how the single-Worker architecture fits together.
->
-> The public demo (banner, exposed credentials, daily database reset) lives on the
-> [`demo` branch](https://github.com/theserverlessdev/astro-monograph-teenybase/tree/demo);
-> `main` is the clean template.
 
 ## How it works
 
@@ -37,17 +45,18 @@ sharing a single D1 database and R2 bucket.
 ```
 src/
 ├── components/      # Hero, About, Experience, Projects, Skills, Education,
-│                    # Contact, Footer, BlogTeaser, LinksTeaser, CustomSections
+│                    # Contact, Footer, BlogTeaser, LinksTeaser, CustomSections,
+│                    # DemoBanner
 ├── data/            # YAML seed + fallback content (edit or seed into D1)
 ├── layouts/         # BaseLayout (SEO/theme), PageLayout (sub-page chrome)
 ├── lib/             # data loader, content (D1↔YAML), blog, links, rss, slug, og, admin SPA
-├── pages/           # index, blog/, links, cv, projects/[slug], admin/,
-│                    # api/[...path], og/[...path], rss.xml, links.xml,
-│                    # sitemap.xml, llms.txt, robots.txt
-├── server/          # teeny.ts (mounts teenybase inside the Worker)
+├── pages/           # index, blog/, links, cv, projects/[slug], admin/, api/[...path],
+│                    # og/[...path], internal/reset, rss.xml, links.xml, sitemap.xml,
+│                    # llms.txt, robots.txt
+├── server/          # teeny.ts (mounts teenybase), reset.ts (daily demo reset)
 └── styles/          # global.css (Tailwind theme + animations)
 blog-backend/        # teenybase config + generated D1 migrations + seed scripts
-scripts/             # setup.mjs, seed-content.mjs
+scripts/             # setup.mjs, seed-content.mjs, postbuild-cron.mjs
 ```
 
 ## Run it yourself
@@ -60,13 +69,14 @@ cd astro-monograph-teenybase
 npm install
 npx wrangler login
 
-# Provisions D1 + R2, applies migrations, sets secrets, deploys, creates your
-# admin user, and seeds content. Prints your live URL + credentials.
+# Provisions D1 + R2, applies migrations, sets secrets, deploys, creates the
+# demo admin user, and seeds content. Prints your live URL + credentials.
 npm run setup
 ```
 
-`npm run setup` (see `scripts/setup.mjs`) is idempotent and prints your admin
-login at the end (override with `ADMIN_EMAIL=you@example.com ADMIN_PASSWORD=…`).
+`npm run setup` (see `scripts/setup.mjs`) is idempotent. By default it creates the
+public demo admin (`demo@example.com` / `monograph-demo`). For a **private**
+deployment, override the account: `ADMIN_EMAIL=you@example.com ADMIN_PASSWORD=… npm run setup`.
 
 **Custom domain** (must be a zone on your Cloudflare account):
 
@@ -83,6 +93,27 @@ To re-seed content from YAML after editing it: `npm run seed:content` (add
 npm install
 cp blog-backend/.dev.vars.example .dev.vars   # then edit
 npm run dev
+```
+
+## The 24-hour demo reset
+
+Because the admin is public, the database is rebuilt daily so the demo stays
+clean and self-healing:
+
+- A **Cloudflare Cron Trigger** (`triggers.crons` in `wrangler.jsonc`) fires the
+  Worker's `scheduled()` handler.
+- The adapter owns the Worker entry, so `scripts/postbuild-cron.mjs` runs after
+  `astro build` to wrap the generated entry with a `scheduled()` handler and inject
+  the cron into the deploy config.
+- `scheduled()` POSTs to `/internal/reset` (guarded by the `RESET_TOKEN` secret),
+  which runs `resetDemo()` in `src/server/reset.ts`: wipe the app tables, recreate
+  the demo admin user, and re-seed content + a welcome post + a link.
+
+Trigger a reset by hand:
+
+```bash
+curl -X POST https://astro-monograph-teenybase.theserverless.dev/internal/reset \
+  -H "x-reset-token: $RESET_TOKEN"
 ```
 
 ## Continuous deployment

@@ -15,13 +15,19 @@ GitHub.
 
    | Setting | Value |
    |---|---|
-   | **Git branch** | `main` (production) |
+   | **Git branch** | `demo` (production — this branch carries the demo layer) |
    | **Build command** | `npm run build` |
    | **Deploy command** | `npx wrangler deploy` |
    | **Root directory** | `/` (repo root) |
-   | **Build variables** | *(none required — secrets are already set on the Worker)* |
+   | **Build variables** | `PUBLIC_DEMO_MODE=1` *(turns this into a demo build — see below)* |
 
-4. Save. Push a commit to `main` to trigger the first build.
+4. Save. Push a commit to `demo` to trigger the first build.
+
+> **`PUBLIC_DEMO_MODE`** is what makes a build a *demo* build: the DemoBanner +
+> exposed credentials and the daily `/internal/reset` cron are emitted only when
+> it's set (see `src/lib/demo.ts`, `scripts/postbuild-cron.mjs`). Set it to `1` in
+> the dashboard build variables for the public demo Worker. Leave it unset for a
+> normal private deployment.
 
 > **Why these values:** the build command produces `dist/` via Astro's Cloudflare
 > adapter, and `wrangler deploy` ships it using the bindings in the repo-root
@@ -40,9 +46,10 @@ GitHub.
     the push. If you'd rather automate it, change the **Deploy command** to:
     `npx wrangler d1 migrations apply astro-monograph-teenybase-db --remote --yes && npx wrangler deploy`
   - **Secrets** (`JWT_SECRET`, `JWT_SECRET_USERS`, `ADMIN_JWT_SECRET`,
-    `ADMIN_SERVICE_TOKEN`, `POCKET_UI_EDITOR_PASSWORD`) are already set on the
-    Worker and persist across builds. Manage them in **Settings → Variables and
-    Secrets**.
+    `ADMIN_SERVICE_TOKEN`, `POCKET_UI_EDITOR_PASSWORD`, `RESET_TOKEN`) are already
+    set on the Worker and persist across builds. Manage them in **Settings →
+    Variables and Secrets**. `RESET_TOKEN` guards the daily demo reset
+    (`/internal/reset`).
 
 ## Preview deployments (optional)
 

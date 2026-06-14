@@ -93,6 +93,13 @@ async function main() {
   info(`Project: ${PROJECT}  |  D1: ${D1_NAME}  |  R2: ${R2_NAME}`);
 
   // --- 1. Provision D1 + R2 (idempotent) -----------------------------------
+  // Demo mode is opt-in. Without DEMO_MODE this provisions a normal private
+  // portfolio (real admin, generated password, no public banner, no daily reset).
+  // With DEMO_MODE=1 it builds with PUBLIC_DEMO_MODE, sets RESET_TOKEN, and seeds
+  // the public demo admin (demo@example.com / monograph-demo).
+  const DEMO_MODE = process.env.DEMO_MODE === '1' || process.env.DEMO_MODE === 'true';
+  if (DEMO_MODE) info('DEMO_MODE on: public demo banner + daily reset enabled');
+
   step('1/7', 'Provisioning D1 + R2');
   let dbId = null;
   const dbList = wrangler(['d1', 'list', '--json'], { quiet: true });
@@ -131,7 +138,9 @@ async function main() {
   // --- 3. Build + migrate --------------------------------------------------
   step('3/7', 'Building site + applying migrations');
   wrangler(['--version'], { quiet: true });
-  execFileSync('npm', ['run', 'build'], { cwd: root, stdio: 'inherit' });
+  // PUBLIC_DEMO_MODE drives the demo UI + the cron wrapper (scripts/postbuild-cron.mjs).
+  const buildEnv = { ...process.env, ...(DEMO_MODE ? { PUBLIC_DEMO_MODE: '1' } : {}) };
+  execFileSync('npm', ['run', 'build'], { cwd: root, stdio: 'inherit', env: buildEnv });
   wrangler(['d1', 'migrations', 'apply', D1_NAME, '--remote'], { input: 'y\n', capture: false });
 
   // --- 4. Secrets ----------------------------------------------------------
@@ -143,6 +152,9 @@ async function main() {
     ADMIN_JWT_SECRET: rand(32),
     ADMIN_SERVICE_TOKEN: adminServiceToken,
     POCKET_UI_EDITOR_PASSWORD: rand(12),
+    // Demo only: guards POST /internal/reset; the daily cron passes it in the
+    // x-reset-token header to rebuild the demo database (src/server/reset.ts).
+    ...(DEMO_MODE ? { RESET_TOKEN: rand(24) } : {}),
   };
   const existing = wrangler(['secret', 'list'], { quiet: true });
   for (const [name, value] of Object.entries(secrets)) {
@@ -168,16 +180,22 @@ async function main() {
   }
   await api(base, '/setup-db', { method: 'POST', token: adminServiceToken, body: {} });
 
-  const adminEmail = process.env.ADMIN_EMAIL || `admin@${process.env.DOMAIN || 'example.com'}`;
-  const adminPassword = process.env.ADMIN_PASSWORD || rand(10);
+  // In demo mode, seed the well-known public demo account (shown on the site and
+  // the /admin login, kept in sync with src/lib/demo.ts). Otherwise create a
+  // private admin: ADMIN_EMAIL (or admin@<domain>) with a generated password.
+  const adminEmail = process.env.ADMIN_EMAIL ||
+    (DEMO_MODE ? (process.env.DEMO_EMAIL || 'demo@example.com')
+               : `admin@${process.env.DOMAIN || 'example.com'}`);
+  const adminPassword = process.env.ADMIN_PASSWORD ||
+    (DEMO_MODE ? (process.env.DEMO_PASSWORD || 'monograph-demo') : rand(10));
   const signup = await api(base, '/table/users/auth/sign-up', {
     method: 'POST', token: adminServiceToken,
     body: {
-      username: process.env.ADMIN_USERNAME || 'admin',
+      username: process.env.ADMIN_USERNAME || (DEMO_MODE ? (process.env.DEMO_USERNAME || 'demo') : 'admin'),
       email: adminEmail,
       password: adminPassword,
       passwordConfirm: adminPassword,
-      name: process.env.ADMIN_NAME || 'Site Owner',
+      name: process.env.ADMIN_NAME || (DEMO_MODE ? (process.env.DEMO_NAME || 'Demo Admin') : 'Site Owner'),
     },
   });
   if (!signup.ok && !/exists|unique/i.test(signup.text)) {
@@ -202,7 +220,8 @@ async function main() {
   console.log(`\n  Admin login:`);
   console.log(`    email:    ${adminEmail}`);
   console.log(`    password: ${adminPassword}`);
-  console.log(`\n  Save these in your password manager. Edit everything live from the admin.`);
+  if (DEMO_MODE) console.log(`\n  DEMO_MODE: these credentials are public on the site; the database resets daily.`);
+  else console.log(`\n  Save these in your password manager. Edit everything live from the admin.`);
   if (!process.env.DOMAIN) {
     console.log(`\n  To use your own domain (must be a Cloudflare zone): set DOMAIN=yourdomain.com and re-run,`);
     console.log(`  or add a custom-domain route to wrangler.jsonc and \`npx wrangler deploy\`.`);

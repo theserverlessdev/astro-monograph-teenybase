@@ -11,4 +11,10 @@ interface CloudflareBindings {
     POCKET_UI_EDITOR_PASSWORD: string
     RESPOND_WITH_ERRORS: string
     APP_URL: string
+    // Demo reset (see src/server/reset.ts)
+    RESET_TOKEN: string
+    DEMO_EMAIL?: string
+    DEMO_PASSWORD?: string
+    DEMO_USERNAME?: string
+    DEMO_NAME?: string
 }

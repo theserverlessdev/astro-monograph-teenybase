@@ -1,6 +1,7 @@
 ---
 import { LI, liSrc } from '../lib/data';
 import { getContent } from '../lib/content';
+import { DEMO_MODE } from '../lib/demo';
 const content = await getContent(Astro);
 const site = content.site || {};
 const contact = content.contact || {};
@@ -33,6 +34,12 @@ const footer = contact.footer || {};
       <a href="/projects" class="text-ink-tertiary hover:text-accent transition-colors no-underline">Projects</a>
       <span class="mx-1">·</span>
       <a href="/cv" class="text-ink-tertiary hover:text-accent transition-colors no-underline">CV</a>
+      {DEMO_MODE && (
+        <>
+          <span class="mx-1.5 opacity-50">·</span>
+          <a href="/admin" class="text-ink-tertiary hover:text-accent transition-colors no-underline">Admin</a>
+        </>
+      )}
     </p>
   </div>
 </footer>
